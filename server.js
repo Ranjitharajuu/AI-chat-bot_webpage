@@ -9,13 +9,13 @@ const upload = multer({ dest: "uploads/" });
 
 app.use(cors());
 app.use(express.json());
-const path = require("path");
+
 
 app.use(express.static(path.join(__dirname)));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
-});
+});s
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
