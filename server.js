@@ -13,58 +13,40 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
+// Ensure upload directory exists
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
+
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// ================= AI INTENT DETECTION =================
-async function detectIntent(question) {
-  const response = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: `Classify this into one word: weather, sports, time, or general: "${question}"` }]
-  });
-  return response.choices[0].message.content.toLowerCase();
-}
-
-// ================= TOOLS =================
-async function getWeather() {
-  try {
-    const response = await fetch("https://wttr.in/Bangalore?format=j1");
-    const data = await response.json();
-    const temp = data.current_condition[0].temp_C;
-    const desc = data.current_condition[0].weatherDesc[0].value;
-    return `🌦️ Bangalore: ${temp}°C, ${desc}`;
-  } catch (err) { return "Weather service unavailable"; }
-}
-
-// ================= MAIN CHAT =================
+// ================= MAIN CHAT ROUTE =================
 app.post("/ask", async (req, res) => {
   try {
     const { question } = req.body;
-    const intent = await detectIntent(question);
+    if (!question) return res.status(400).json({ answer: "No question provided" });
 
-    let result;
-    if (intent.includes("weather")) {
-      result = await getWeather();
-    } else if (intent.includes("time")) {
-      result = `⏰ Current time: ${new Date().toLocaleString()}`;
-    } else {
-      const ai = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: question }]
-      });
-      result = ai.choices[0].message.content;
-    }
+    // Using the standard chat completions API
+    const aiResponse = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: question }],
+    });
+
+    const result = aiResponse.choices[0].message.content;
     res.json({ answer: result });
+
   } catch (err) {
-    res.status(500).json({ answer: "Something went wrong" });
+    console.error("Chat Error:", err.message);
+    res.status(500).json({ answer: "AI service is currently unavailable." });
   }
 });
 
-// ================= IMAGE ANALYSIS (FIXED) =================
+// ================= IMAGE ANALYSIS ROUTE =================
 app.post("/image", upload.single("image"), async (req, res) => {
   try {
-    if (!req.file) return res.json({ answer: "No image uploaded" });
+    if (!req.file) return res.status(400).json({ answer: "No image uploaded" });
 
     const imageBase64 = fs.readFileSync(req.file.path, { encoding: "base64" });
 
@@ -74,7 +56,7 @@ app.post("/image", upload.single("image"), async (req, res) => {
         {
           role: "user",
           content: [
-            { type: "text", text: "Describe this image briefly." },
+            { type: "text", text: "What is in this image?" },
             {
               type: "image_url",
               image_url: { url: `data:image/jpeg;base64,${imageBase64}` },
@@ -84,15 +66,15 @@ app.post("/image", upload.single("image"), async (req, res) => {
       ],
     });
 
-    // Clean up file after reading
+    // Delete file after processing to save space
     fs.unlinkSync(req.file.path);
 
     res.json({ answer: response.choices[0].message.content });
   } catch (err) {
-    console.error("OpenAI Error:", err.message);
-    res.json({ answer: "Image analysis failed." });
+    console.error("Image Error:", err.message);
+    res.status(500).json({ answer: "Could not analyze the image." });
   }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => console.log("Server running on http://localhost:" + PORT));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

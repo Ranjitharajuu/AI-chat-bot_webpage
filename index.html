@@ -248,38 +248,34 @@
 <script>
 let voiceEnabled = true;
 
-function speak(text) {
-  // If voice is off, stop any current speaking and exit
+// 1. IMPROVED VOICE TOGGLE
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const voiceBtn = document.getElementById("voiceBtn");
+  
   if (!voiceEnabled) {
-    window.speechSynthesis.cancel();
-    return;
+    voiceBtn.innerText = "🔇";
+    window.speechSynthesis.cancel(); // Stop any current speech immediately
+  } else {
+    voiceBtn.innerText = "🔊";
   }
-  
-  // Create speech
-  const speech = new SpeechSynthesisUtterance(text);
-  
-  // Optional: Pick a better voice
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length > 0) speech.voice = voices[0];
+}
 
+// 2. ROBUST SPEAK FUNCTION
+function speak(text) {
+  if (!voiceEnabled) return;
+
+  // Cancel any ongoing speech so they don't overlap
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.rate = 1.0;
+  speech.pitch = 1.0;
+  
   window.speechSynthesis.speak(speech);
 }
 
-function toggleVoice() {
-  voiceEnabled = !voiceEnabled;
-  const btn = document.getElementById("voiceBtn");
-  
-  if (voiceEnabled) {
-    btn.innerText = "🔊";
-    btn.style.opacity = "1";
-  } else {
-    btn.innerText = "🔇";
-    btn.style.opacity = "0.5";
-    window.speechSynthesis.cancel(); // Stop AI talking immediately
-  }
-}
-
-// Update your sendMessage to handle the "Talking" logic properly
+// 3. UPDATED SEND MESSAGE (with better error catching)
 async function sendMessage() {
   const inputEl = document.getElementById("userInput");
   const text = inputEl.value.trim();
@@ -287,32 +283,37 @@ async function sendMessage() {
 
   if (!text) return;
 
+  // Add User Message
   chat.innerHTML += `<div class="message user">${text}</div>`;
   inputEl.value = "";
   
+  // Add Placeholder/Typing
   const tempId = "msg-" + Date.now();
-  chat.innerHTML += `<div class="message bot" id="${tempId}">...</div>`;
+  chat.innerHTML += `<div class="message bot" id="${tempId}"><div class="typing"><span></span><span></span><span></span></div></div>`;
   chat.scrollTop = chat.scrollHeight;
 
   try {
+    // Ensure this URL matches your backend port!
     const res = await fetch("http://localhost:5000/ask", {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({question: text})
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: text })
     });
+
+    if (!res.ok) throw new Error("Server responded with error");
+
     const data = await res.json();
-    
     document.getElementById(tempId).innerText = data.answer;
     
-    // Only speak if enabled
-    if (voiceEnabled) speak(data.answer);
+    // Speak the answer
+    speak(data.answer);
 
   } catch (err) {
-    document.getElementById(tempId).innerText = "Error connecting to server.";
+    console.error(err);
+    document.getElementById(tempId).innerText = "Connection lost. Please check if the server is running.";
   }
   chat.scrollTop = chat.scrollHeight;
 }
-
 // Fix the image upload event listener
 document.getElementById("imageInput").addEventListener("change", async function() {
   const file = this.files[0];
