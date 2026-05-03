@@ -1,269 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Chat | Intelligent Assistant</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-<style>
-  /* Define the core theme colors based on your design */
-  :root {
-    --primary: #6366f1; /* Vibrant blue/purple from your screenshot */
-    --primary-hover: #4f46e5;
-    --background-dark: #0f172a; /* Sophisticated base dark blue */
-    --background-accent: #1e293b; /* Accent shade for depth */
-    --glass-bg: rgba(23, 23, 40, 0.7); /* Deep dark glass */
-    --glass-border: rgba(255, 255, 255, 0.08); /* Minimalist border */
-    --text-main: #ffffff;
-    --text-dim: rgba(255, 255, 255, 0.6);
-  }
-
-  * {
-    box-sizing: border-box;
-    transition: all 0.25s ease; /* Silky smooth transitions */
-  }
-
-  body {
-    margin: 0;
-    font-family: "Poppins", sans-serif;
-    /* --- PROFESSIONAL STATIC BACKGROUND --- */
-    /* Layer 1: Radial Gradient for Depth and Glow */
-    background-image: 
-      radial-gradient(circle at top left, rgba(99, 102, 241, 0.2) 0%, transparent 40%),
-      radial-gradient(circle at bottom right, rgba(49, 46, 129, 0.3) 0%, transparent 50%),
-      /* Layer 2: Subtle Dot Pattern (Clean/Professional) */
-      radial-gradient(var(--background-accent) 1.5px, transparent 1px),
-      /* Layer 3: Solid Dark Foundation */
-      linear-gradient(var(--background-dark), var(--background-dark));
-    
-    background-size: 100% 100%, 100% 100%, 40px 40px, 100% 100%;
-    background-position: 0 0, 0 0, 0 0, 0 0;
-    
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--text-main);
-    overflow: hidden;
-  }
-
-  .main {
-    width: 90%;
-    max-width: 1100px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 40px;
-  }
-
-  /* LEFT CONTENT (CLEAN & TYPOGRAPHIC) */
-  .left h1 {
-    font-size: clamp(40px, 5vw, 60px);
-    font-weight: 700;
-    line-height: 1.1;
-    margin: 0;
-    background: linear-gradient(to bottom right, #fff, #a5b4fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .left p {
-    margin-top: 20px;
-    font-size: 18px;
-    color: var(--text-dim);
-    max-width: 450px;
-    line-height: 1.6;
-    font-weight: 300;
-  }
-
-  /* CHATBOX (PRECISE REPLICATION FROM SCREENSHOT) */
-  .chat-container {
-    flex: 1;
-    max-width: 440px;
-    height: 580px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-  }
-
-  .chat-header {
-    padding: 15px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 600;
-    background: rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid var(--glass-border);
-  }
-
-  #chat {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  #chat::-webkit-scrollbar { width: 4px; }
-  #chat::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
-
-  .message {
-    padding: 12px 16px;
-    border-radius: 15px;
-    max-width: 85%;
-    font-size: 14px;
-    line-height: 1.4;
-    animation: slideUp 0.3s ease;
-  }
-
-  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } }
-
-  .user { background: var(--primary); align-self: flex-end; }
-  .bot { background: rgba(255, 255, 255, 0.06); align-self: flex-start; }
-
-  /* INPUT AREA (MODERN & MINIMAL) */
-  .inputArea {
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.25);
-  }
-
-  input[type="text"] {
-    width: 100%;
-    padding: 14px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    color: white;
-    margin-bottom: 12px;
-    outline: none;
-    font-family: inherit;
-  }
-
-  input[type="text"]:focus {
-    border-color: var(--primary);
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  .actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .btn-group { display: flex; gap: 8px; }
-
-  .icon-btn, .upload-label {
-    width: 42px;
-    height: 42px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-size: 18px;
-  }
-
-  .icon-btn:hover, .upload-label:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-  }
-
-  .send-btn {
-    flex-grow: 1;
-    margin-left: 10px;
-    padding: 12px;
-    background: var(--primary);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-  }
-
-  .send-btn:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
-  }
-
-  input[type="file"] { display: none; }
-
-  @media (max-width: 850px) {
-    .main { flex-direction: column; text-align: center; height: auto; padding: 40px 0; }
-    .left p { margin: 20px auto; }
-    .chat-container { width: 100%; height: 550px; }
-  }
-</style>
-</head>
-<body>
-
-<div class="main">
-  <!-- LEFT SIDE -->
-  <div class="left">
-    <h1>Talk to AI.<br>Instantly.</h1>
-    <p>
-      Ask anything, get intelligent answers, and explore visual insights with our advanced galaxy-powered assistant.
-    </p>
-  </div>
-
-  <!-- CHATBOX -->
-  <div class="chat-container">
-    <div class="chat-header">🤖 AI Assistant</div>
-
-    <div id="chat">
-      <div class="message bot">Hello! How can I help you today?</div>
-    </div>
-
-    <div class="inputArea">
-      <input type="text" id="userInput" placeholder="Ask something..." onkeypress="if(event.key==='Enter') sendMessage()" />
-
-      <div class="actions">
-        <div class="btn-group">
-          <button class="icon-btn" onclick="startVoice()" title="Voice Input" id="micBtn">🎤</button>
-          
-          <label class="upload-label" title="Upload Image">
-            📷
-            <input type="file" id="imageInput" accept="image/*">
-          </label>
-
-          <button class="icon-btn" onclick="toggleVoice()" id="voiceBtn" title="Toggle Voice Output">🔊</button>
-        </div>
-
-        <button class="send-btn" onclick="sendMessage()">Send</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-let voiceEnabled = true;
+let voiceEnabled = false; // ✅ OFF by default
 
 function speak(text) {
   if (!voiceEnabled) return;
-  window.speechSynthesis.cancel(); // Clear previous speech
+
+  window.speechSynthesis.cancel(); // stop previous
   const speech = new SpeechSynthesisUtterance(text);
   window.speechSynthesis.speak(speech);
 }
 
 function toggleVoice() {
   voiceEnabled = !voiceEnabled;
-  document.getElementById("voiceBtn").innerText = voiceEnabled ? "🔊" : "🔇";
+
+  const btn = document.getElementById("voiceBtn");
+
+  if (!voiceEnabled) {
+    window.speechSynthesis.cancel(); // 🔥 STOP immediately
+    btn.innerText = "🔇";
+  } else {
+    btn.innerText = "🔊";
+  }
 }
 
 function startVoice() {
   const btn = document.getElementById("micBtn");
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  
+
   if (!Recognition) {
     alert("Voice recognition not supported in this browser.");
     return;
@@ -289,16 +51,14 @@ async function sendMessage() {
 
   if (!text) return;
 
-  // Append user message
   chat.innerHTML += `<div class="message user">${text}</div>`;
   inputEl.value = "";
   chat.scrollTop = chat.scrollHeight;
 
-  // Add typing indicator
   const tempId = "msg-" + Date.now();
   chat.innerHTML += `
     <div class="message bot" id="${tempId}">
-      <div class="typing"><span></span><span></span><span></span></div>
+      <div class="typing">AI is typing...</div>
     </div>
   `;
   chat.scrollTop = chat.scrollHeight;
@@ -312,17 +72,20 @@ async function sendMessage() {
 
     const data = await res.json();
     const botMessageEl = document.getElementById(tempId);
-    
+
     botMessageEl.innerText = data.answer;
+
+    // ✅ speak only if enabled
     speak(data.answer);
+
   } catch (err) {
-    document.getElementById(tempId).innerText = "Sorry, I'm having trouble connecting to the server.";
+    document.getElementById(tempId).innerText = "Server error.";
   }
-  
+
   chat.scrollTop = chat.scrollHeight;
 }
 
-// Image upload handling
+// Image upload
 document.getElementById("imageInput").addEventListener("change", async function() {
   const file = this.files[0];
   if (!file) return;
@@ -342,14 +105,14 @@ document.getElementById("imageInput").addEventListener("change", async function(
 
     const data = await res.json();
     chat.innerHTML += `<div class="message bot">${data.answer}</div>`;
+
+    // ✅ controlled voice
     speak(data.answer);
-  } catch (err) {
-    chat.innerHTML += `<div class="message bot">Failed to upload image.</div>`;
+
+  } catch {
+    chat.innerHTML += `<div class="message bot">Upload failed.</div>`;
   }
-  
+
   chat.scrollTop = chat.scrollHeight;
 });
 </script>
-
-</body>
-</html>
