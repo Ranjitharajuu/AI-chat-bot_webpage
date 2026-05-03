@@ -309,7 +309,43 @@ async function sendMessage() {
 
   chat.scrollTop = chat.scrollHeight;
 }
+function startVoice() {
+  const btn = document.getElementById("micBtn");
 
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("❌ Voice input not supported in this browser.\nUse Chrome.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  btn.innerText = "🎙️"; // recording state
+
+  recognition.start();
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById("userInput").value = transcript;
+    btn.innerText = "🎤";
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Voice error:", event.error);
+    btn.innerText = "🎤";
+    alert("⚠️ Voice error: " + event.error);
+  };
+
+  recognition.onend = () => {
+    btn.innerText = "🎤";
+  };
+}
 // IMAGE UPLOAD
 document.getElementById("imageInput").addEventListener("change", async function () {
   const file = this.files[0];
