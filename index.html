@@ -304,7 +304,7 @@ async function sendMessage() {
   chat.scrollTop = chat.scrollHeight;
 
   try {
-    const res = await fetch("http://localhost:5000/ask", {
+    const res = await fetch("/ask", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({question: text})
@@ -335,7 +335,7 @@ document.getElementById("imageInput").addEventListener("change", async function(
   chat.scrollTop = chat.scrollHeight;
 
   try {
-    const res = await fetch("http://localhost:5000/image", {
+    const res = await fetch("/image", {
       method: "POST",
       body: formData
     });
